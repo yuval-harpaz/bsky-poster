@@ -120,7 +120,7 @@ function App() {
                     WebkitTextFillColor: 'transparent',
                     marginBottom: '0.5rem'
                 }}>
-                    Bluesky Post
+                    Bluesky Poster
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>Write richly, post seamlessly.</p>
             </header>
