@@ -136,6 +136,23 @@ function App() {
                 />
             </main>
 
+            <footer style={{
+                marginTop: '2rem',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                fontSize: '0.875rem',
+                maxWidth: '640px',
+                marginInline: 'auto'
+            }}>
+                <p style={{ margin: '0.5rem 0' }}>
+                    Images should be jpg or png, less than 1MB and no longer than 1000 pixels.
+                </p>
+                <p style={{ margin: '0.5rem 0' }}>
+                    You will have to specify username and password for posting to your account.
+                    This will not be kept, and will not be used for anything other than posting this once.
+                </p>
+            </footer>
+
             <AuthDialog
                 isOpen={isAuthOpen}
                 onClose={() => { setIsAuthOpen(false); setPendingPost(false) }}
