@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Github } from 'lucide-react'
 import { RichEditor, type ImageAttachment } from './components/RichEditor'
 import { AuthDialog } from './components/AuthDialog'
 import { processText } from './utils/text-processing'
@@ -147,10 +148,26 @@ function App() {
                 <p style={{ margin: '0.5rem 0' }}>
                     Images should be jpg or png, less than 1MB and no longer than 1000 pixels.
                 </p>
-                <p style={{ margin: '0.5rem 0' }}>
+                <p style={{ margin: '0.5rem 0', textAlign: 'left' }}>
                     You will have to specify username and password for posting to your account.
                     This will not be kept, and will not be used for anything other than posting this once.
                 </p>
+                <div style={{ textAlign: 'left', marginTop: '0.5rem' }}>
+                    <a
+                        href="https://github.com/yuval-harpaz/bsky-poster/blob/main/README.md"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            color: 'inherit',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            textDecoration: 'none'
+                        }}
+                        title="View source on GitHub"
+                    >
+                        <Github size={20} />
+                    </a>
+                </div>
             </footer>
 
             <AuthDialog
