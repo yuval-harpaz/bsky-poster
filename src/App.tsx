@@ -125,7 +125,7 @@ function App() {
                     justifyContent: 'center',
                     gap: '1rem'
                 }}>
-                    <img src="/icon.png" alt="" style={{ width: '48px', height: '48px', borderRadius: '8px' }} />
+                    <img src="https://raw.githubusercontent.com/yuval-harpaz/bsky-poster/refs/heads/main/public/icon.png" alt="" style={{ width: '48px', height: '48px', borderRadius: '8px' }} />
                     Bluesky Poster
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>Write richly, post seamlessly.</p>
