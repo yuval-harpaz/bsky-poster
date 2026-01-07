@@ -152,7 +152,8 @@ function App() {
                     You will have to specify username and password for posting to your account.
                     This will not be kept, and will not be used for anything other than posting this once.
                 </p>
-                <div style={{ textAlign: 'left', marginTop: '0.5rem' }}>
+                <div style={{ textAlign: 'left', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>Source:</span>
                     <a
                         href="https://github.com/yuval-harpaz/bsky-poster/blob/main/README.md"
                         target="_blank"
