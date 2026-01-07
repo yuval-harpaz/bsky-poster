@@ -125,7 +125,7 @@ function App() {
                     justifyContent: 'center',
                     gap: '1rem'
                 }}>
-                    <Github size={40} style={{ stroke: '#3b82f6' }} />
+                    <img src="/icon.png" alt="" style={{ width: '48px', height: '48px', borderRadius: '8px' }} />
                     Bluesky Poster
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>Write richly, post seamlessly.</p>
