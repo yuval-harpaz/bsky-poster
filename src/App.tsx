@@ -119,8 +119,13 @@ function App() {
                     background: 'linear-gradient(to right, #3b82f6, #8b5cf6)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    marginBottom: '0.5rem'
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '1rem'
                 }}>
+                    <Github size={40} style={{ stroke: '#3b82f6' }} />
                     Bluesky Poster
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>Write richly, post seamlessly.</p>
