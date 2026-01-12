@@ -1,5 +1,6 @@
-import { useRef } from 'react'
-import { Bold, Italic, Link as LinkIcon, AlertCircle, Image as ImageIcon, X, AlertTriangle } from 'lucide-react'
+import { useRef, useState, useMemo } from 'react'
+import { Bold, Italic, Link as LinkIcon, AlertCircle, Image as ImageIcon, X, AlertTriangle, Smile } from 'lucide-react'
+import { COMMON_EMOJIS, type Emoji } from '../utils/emojis'
 
 export interface ImageAttachment {
     file: File
@@ -19,6 +20,28 @@ interface RichEditorProps {
 export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageChange }: RichEditorProps) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const emojiDropdownRef = useRef<HTMLDivElement>(null)
+
+    const [emojiState, setEmojiState] = useState<{
+        isActive: boolean
+        query: string
+        cursorPosition: number
+        selectedIndex: number
+    }>({
+        isActive: false,
+        query: '',
+        cursorPosition: 0,
+        selectedIndex: 0
+    })
+
+    const filteredEmojis = useMemo(() => {
+        if (!emojiState.isActive) return []
+        const q = emojiState.query.toLowerCase()
+        return COMMON_EMOJIS.filter(e =>
+            e.shortcodes.some(s => s.toLowerCase().includes(q)) ||
+            e.name.toLowerCase().includes(q)
+        ).slice(0, 8)
+    }, [emojiState.isActive, emojiState.query])
 
     // Track cursor for toolbar button insertion
     const insertText = (before: string, after: string = '') => {
@@ -38,6 +61,26 @@ export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageC
         setTimeout(() => {
             textarea.focus()
             textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length)
+        }, 0)
+    }
+
+    const selectEmoji = (emoji: Emoji) => {
+        const textarea = textareaRef.current
+        if (!textarea) return
+
+        const start = emojiState.cursorPosition
+        const end = textarea.selectionStart
+        const text = textarea.value
+
+        const newText = text.substring(0, start) + emoji.emoji + text.substring(end)
+        onChange(newText)
+
+        setEmojiState(prev => ({ ...prev, isActive: false }))
+
+        setTimeout(() => {
+            textarea.focus()
+            const newPos = start + emoji.emoji.length
+            textarea.setSelectionRange(newPos, newPos)
         }, 0)
     }
 
@@ -101,6 +144,37 @@ export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageC
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (emojiState.isActive) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                setEmojiState(prev => ({
+                    ...prev,
+                    selectedIndex: (prev.selectedIndex + 1) % filteredEmojis.length
+                }))
+                return
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                setEmojiState(prev => ({
+                    ...prev,
+                    selectedIndex: (prev.selectedIndex - 1 + filteredEmojis.length) % filteredEmojis.length
+                }))
+                return
+            }
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                if (filteredEmojis.length > 0) {
+                    e.preventDefault()
+                    selectEmoji(filteredEmojis[emojiState.selectedIndex])
+                    return
+                }
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault()
+                setEmojiState(prev => ({ ...prev, isActive: false }))
+                return
+            }
+        }
+
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault()
             handleLink()
@@ -119,6 +193,58 @@ export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageC
         }
     }
 
+    const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        const textarea = e.currentTarget
+        const val = textarea.value
+        const pos = textarea.selectionStart
+
+        // Check for emoji trigger ":"
+        // We look for : preceded by space or start of line, and not followed by space
+        const lastColonIdx = val.lastIndexOf(':', pos - 1)
+        if (lastColonIdx !== -1) {
+            const query = val.substring(lastColonIdx + 1, pos)
+            // Valid if no spaces in query and preceded by space or start of line
+            const isValidTrigger = (lastColonIdx === 0 || /\s/.test(val[lastColonIdx - 1])) && !/\s/.test(query)
+
+            if (isValidTrigger) {
+                setEmojiState(prev => ({
+                    ...prev,
+                    isActive: true,
+                    query,
+                    cursorPosition: lastColonIdx,
+                    selectedIndex: 0
+                }))
+                return
+            }
+        }
+
+        if (emojiState.isActive) {
+            setEmojiState(prev => ({ ...prev, isActive: false }))
+        }
+    }
+
+    const toggleEmojiPicker = () => {
+        const textarea = textareaRef.current
+        if (!textarea) return
+
+        const pos = textarea.selectionStart
+        const text = textarea.value
+        const newText = text.substring(0, pos) + ':' + text.substring(pos)
+        onChange(newText)
+
+        setEmojiState({
+            isActive: true,
+            query: '',
+            cursorPosition: pos,
+            selectedIndex: 0
+        })
+
+        setTimeout(() => {
+            textarea.focus()
+            textarea.setSelectionRange(pos + 1, pos + 1)
+        }, 0)
+    }
+
     return (
         <div className="rich-editor-container">
             <div className="editor-toolbar">
@@ -128,6 +254,7 @@ export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageC
                 <ToolbarButton icon={<LinkIcon size={18} />} onClick={handleLink} label="Link (Cmd+K)" />
                 <div className="separator" />
                 <ToolbarButton icon={<ImageIcon size={18} />} onClick={() => fileInputRef.current?.click()} label="Add Image" />
+                <ToolbarButton icon={<Smile size={18} />} onClick={toggleEmojiPicker} label="Add Emoji" />
                 <div className="spacer" />
             </div>
 
@@ -145,10 +272,27 @@ export const RichEditor = ({ value, onChange, onPost, isPosting, image, onImageC
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="What's up? (Use Markdown for formatting, Ctrl+K for links)"
+                    onKeyUp={handleKeyUp}
+                    placeholder="What's up? (Use Markdown for formatting, Ctrl+K for links, : for emojis)"
                     className="editor-textarea"
                     spellCheck={false}
                 />
+
+                {emojiState.isActive && filteredEmojis.length > 0 && (
+                    <div className="emoji-dropdown" ref={emojiDropdownRef}>
+                        {filteredEmojis.map((emoji, index) => (
+                            <button
+                                key={emoji.emoji + emoji.shortcodes[0]}
+                                className={`emoji-item ${index === emojiState.selectedIndex ? 'selected' : ''}`}
+                                onClick={() => selectEmoji(emoji)}
+                                onMouseEnter={() => setEmojiState(prev => ({ ...prev, selectedIndex: index }))}
+                            >
+                                <span className="emoji-char">{emoji.emoji}</span>
+                                <span className="emoji-code">:{emoji.shortcodes[0]}:</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {image && (
